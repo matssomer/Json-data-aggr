@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSON Data Aggregation</title>
+</head>
+<body>
+    <h1>Select and Aggregate JSON Data</h1>
+    <div id="data-container"></div>
+    <button id="calculate-btn">Calculate Total Amount</button>
+    <p id="total-amount"></p>
+
+    <script>
+        async function fetchData() {
+            try {
+                const response = await fetch('https://api.jsonbin.io/v3/b/64d7a77c9d312622a3902e2f/latest', {
+                    headers: {
+                        'X-Master-Key': 'YOUR_JSONBIN_API_KEY'
+                    }
+                });
+                const data = await response.json();
+                return data.record;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                return [];
+            }
+        }
+
+        async function displayData() {
+            const jsonData = await fetchData();
+            const dataContainer = document.getElementById('data-container');
+            
+            jsonData.forEach(item => {
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'selected';
+                checkbox.value = item.amount;
+                checkbox.dataset.name = item.name;
+                dataContainer.appendChild(checkbox);
+
+                const label = document.createElement('label');
+                label.textContent = `${item.name} - $${item.amount}`;
+                dataContainer.appendChild(label);
+                dataContainer.appendChild(document.createElement('br'));
+            });
+        }
+
+        function calculateTotalAmount() {
+            const checkboxes = document.querySelectorAll('input[name=selected]:checked');
+            let totalAmount = 0;
+
+            checkboxes.forEach(checkbox => {
+                totalAmount += parseFloat(checkbox.value);
+            });
+
+            const totalAmountElement = document.getElementById('total-amount');
+            totalAmountElement.textContent = `Total Amount: $${totalAmount.toFixed(2)}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            displayData();
+
+            const calculateBtn = document.getElementById('calculate-btn');
+            calculateBtn.addEventListener('click', calculateTotalAmount);
+        });
+    </script>
+</body>
+</html>
